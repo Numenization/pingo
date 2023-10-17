@@ -20,6 +20,16 @@ func StartGraphLoop(state *PingoState) error {
 			str: fmt.Sprintf("ui: invalid update interval %v", state.interval),
 		}
 	}
+
+	if state.pointsToGraph <= 2 || state.pointsToGraph > 1000 {
+		return &StateError{
+			str: fmt.Sprintf("ui: invalid max graph points %v", state.pointsToGraph),
+		}
+	}
+
+	state.Graph.Clear()
+	state.Graph.Length = state.pointsToGraph
+
 	pinger, err := probing.NewPinger("www.google.com")
 
 	if err != nil {
@@ -46,7 +56,7 @@ func StartGraphLoop(state *PingoState) error {
 				//state.Graph.AddValue(float64(rand.Intn(100)))
 				img, err := state.Graph.GenerateImage()
 				if err != nil {
-					fmt.Println(err)
+					//fmt.Println(err)
 					//running = false
 					continue
 				}
@@ -65,6 +75,7 @@ func StartGraphLoop(state *PingoState) error {
 	return nil
 }
 
+// Stops the Pingo graphing loop
 func StopGraphLoop(state *PingoState) {
 	if state.running {
 		state.stopChan <- true

@@ -1,11 +1,13 @@
 package ui
 
 import (
+	"fmt"
 	"image/color"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 )
@@ -24,7 +26,7 @@ func BuildRaster(state *PingoState) *canvas.Raster {
 	return raster
 }
 
-func BuildControlsLayout() *fyne.Container {
+func BuildControlsLayout(state *PingoState) *fyne.Container {
 	// Box containing all the user controlled fields
 	// ------------------------------ |
 	// Points to Show:       [    25] |
@@ -37,16 +39,24 @@ func BuildControlsLayout() *fyne.Container {
 	intervalLabel := widget.NewLabel("Ping Interval (ms):")
 	targetLabel := widget.NewLabel("Target IPv4:")
 
-	pointsEntry := widget.NewEntry()
-	pointsEntry.SetText("25")
-	intervalEntry := widget.NewEntry()
-	intervalEntry.SetText("150")
-	targetEntry := widget.NewEntry()
-	targetEntry.SetText("8.8.8.8")
+	boundPoints := binding.IntToString(binding.BindInt(&state.pointsToGraph))
+	boundInterval := binding.IntToString(binding.BindInt(&state.interval))
+	boundTarget := binding.BindString(&state.target)
 
-	startButton := widget.NewButton("Start", func() {})
-	stopButton := widget.NewButton("Stop", func() {})
-	saveButton := widget.NewButton("Save Logs", func() {})
+	pointsEntry := NewNumericalEntryWithData(boundPoints)
+	intervalEntry := NewNumericalEntryWithData(boundInterval)
+	targetEntry := widget.NewEntryWithData(boundTarget)
+
+	startButton := widget.NewButton("Start", func() { go func() { StartGraphLoop(state) }() })
+	stopButton := widget.NewButton("Stop", func() { go func() { StopGraphLoop(state) }() })
+	saveButton := widget.NewButton("Save Logs", func() { fmt.Println(state) })
+
+	state.pointsEntry = pointsEntry
+	state.intervalEntry = intervalEntry
+	state.targetEntry = targetEntry
+	state.startButton = startButton
+	state.stopButton = stopButton
+	state.saveButton = saveButton
 
 	controlForm := container.New(layout.NewFormLayout(), pointsLabel, pointsEntry, intervalLabel, intervalEntry, targetLabel, targetEntry)
 	startStopButtons := container.New(layout.NewGridLayout(2), startButton, stopButton)
@@ -62,7 +72,7 @@ func CreateWindow(a fyne.App, state *PingoState) fyne.Window {
 	window := a.NewWindow("Pingo")
 
 	raster := BuildRaster(state)
-	controls := BuildControlsLayout()
+	controls := BuildControlsLayout(state)
 
 	bottomContainer := container.NewGridWithColumns(2, controls, widget.NewEntry())
 	mainContainer := container.NewBorder(raster, bottomContainer, nil, nil)

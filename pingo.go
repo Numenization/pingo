@@ -14,10 +14,5 @@ func main() {
 	window := ui.CreateWindow(newApp, state)
 	window.Resize(fyne.NewSize(900, 190))
 
-	go func() {
-		state.Graph.Length = 20
-		ui.StartGraphLoop(state)
-	}()
-
 	window.ShowAndRun()
 }
