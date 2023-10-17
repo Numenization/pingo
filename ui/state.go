@@ -28,6 +28,7 @@ type PingoState struct {
 	intervalEntry *NumericalEntry
 	pointsEntry   *NumericalEntry
 	targetEntry   *widget.Entry
+	logBox        *ReadOnlyEntry
 }
 
 func NewState() *PingoState {

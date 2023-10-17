@@ -42,29 +42,7 @@ func StartGraphLoop(state *PingoState) error {
 		state.Graph.AddValue(float64(pkt.Rtt / time.Millisecond))
 	}
 
-	go func() {
-		state.running = true
-		for {
-			if !state.running {
-				break
-			}
-			select {
-			case <-state.stopChan:
-				pinger.Stop()
-				state.running = false
-			default:
-				//state.Graph.AddValue(float64(rand.Intn(100)))
-				img, err := state.Graph.GenerateImage()
-				if err != nil {
-					//fmt.Println(err)
-					//running = false
-					continue
-				}
-				state.SetImage(img)
-				time.Sleep(time.Duration(state.interval) * time.Millisecond)
-			}
-		}
-	}()
+	go GraphLoop(state, pinger)
 
 	err = pinger.Run()
 
@@ -79,5 +57,27 @@ func StartGraphLoop(state *PingoState) error {
 func StopGraphLoop(state *PingoState) {
 	if state.running {
 		state.stopChan <- true
+	}
+}
+
+func GraphLoop(state *PingoState, pinger *probing.Pinger) {
+	state.running = true
+	for {
+		if !state.running {
+			break
+		}
+		select {
+		case <-state.stopChan:
+			pinger.Stop()
+			state.running = false
+		default:
+			img, err := state.Graph.GenerateImage()
+			if err != nil {
+				// TODO: handle the error somehow
+				continue
+			}
+			state.SetImage(img)
+			time.Sleep(time.Duration(state.interval) * time.Millisecond)
+		}
 	}
 }

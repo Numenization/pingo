@@ -17,7 +17,7 @@ func BuildRaster(state *PingoState) *canvas.Raster {
 		if state.canvasImage != nil {
 			return state.canvasImage.At(x, y)
 		} else {
-			return color.RGBA{0, 0, 0, 0}
+			return color.RGBA{255, 255, 255, 255}
 		}
 	})
 	state.canvasRaster = raster
@@ -74,7 +74,14 @@ func CreateWindow(a fyne.App, state *PingoState) fyne.Window {
 	raster := BuildRaster(state)
 	controls := BuildControlsLayout(state)
 
-	bottomContainer := container.NewGridWithColumns(2, controls, widget.NewEntry())
+	logEntry := NewReadOnlyEntry()
+	state.logBox = logEntry
+
+	for i := 0; i < 10; i++ {
+		logEntry.Text = fmt.Sprintf("%v%v%v\n", logEntry.Text, "New line: ", i)
+	}
+
+	bottomContainer := container.NewGridWithColumns(2, controls, logEntry)
 	mainContainer := container.NewBorder(raster, bottomContainer, nil, nil)
 
 	window.SetContent(mainContainer)

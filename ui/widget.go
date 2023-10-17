@@ -12,6 +12,10 @@ type NumericalEntry struct {
 	widget.Entry
 }
 
+type ReadOnlyEntry struct {
+	widget.Entry
+}
+
 // An extended Fyne.io Entry that will only allow numeric (0-9) inputs
 func NewNumericalEntry() *NumericalEntry {
 	entry := &NumericalEntry{}
@@ -44,4 +48,22 @@ func (e *NumericalEntry) TypedShortcut(shortcut fyne.Shortcut) {
 	if _, err := strconv.ParseInt(content, 10, 64); err == nil {
 		e.Entry.TypedShortcut(shortcut)
 	}
+}
+
+func NewReadOnlyEntry() *ReadOnlyEntry {
+	entry := &ReadOnlyEntry{}
+	entry.ExtendBaseWidget(entry)
+	return entry
+}
+
+func (e *ReadOnlyEntry) TypedKey(key *fyne.KeyEvent) {
+	// do nothing
+}
+
+func (e *ReadOnlyEntry) TypedRune(r rune) {
+	// do nothing
+}
+
+func (e *ReadOnlyEntry) TypedShortcut(shortcut fyne.Shortcut) {
+	// do nothing
 }
