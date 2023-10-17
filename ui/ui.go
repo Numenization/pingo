@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"image/color"
+	"math/rand"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -35,7 +36,14 @@ func StartGraphLoop(state *PingoState) error {
 			case <-state.stopChan:
 				running = false
 			default:
-				state.Graph.GenerateImage()
+				state.Graph.AddValue(float64(rand.Intn(100)))
+				img, err := state.Graph.GenerateImage()
+				if err != nil {
+					fmt.Println(err)
+					running = false
+					continue
+				}
+				state.SetImage(img)
 				time.Sleep(time.Duration(state.interval) * time.Millisecond)
 			}
 		}

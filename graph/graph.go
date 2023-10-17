@@ -85,6 +85,11 @@ func (graph *PingoGraph) GenerateImage() (img image.Image, err error) {
 	}
 
 	gochart := chart.Chart{
+		XAxis: chart.HideXAxis(),
+		YAxis: chart.YAxis{
+			//AxisType: chart.YAxisSecondary,
+			Name: "Ping (ms)",
+		},
 		Series: []chart.Series{
 			chart.ContinuousSeries{
 				XValues: graph.XValues,
