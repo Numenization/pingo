@@ -2,14 +2,9 @@ package ui
 
 import (
 	"fmt"
-	"image/color"
-	"math/rand"
 	"time"
 
-	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/canvas"
-	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/widget"
+	probing "github.com/prometheus-community/pro-bing"
 )
 
 // Starts graphing the Pingo Graph
@@ -25,22 +20,34 @@ func StartGraphLoop(state *PingoState) error {
 			str: fmt.Sprintf("ui: invalid update interval %v", state.interval),
 		}
 	}
+	pinger, err := probing.NewPinger("www.google.com")
+
+	if err != nil {
+		return err
+	}
+
+	pinger.Interval = time.Duration(state.interval) * time.Millisecond
+
+	pinger.OnRecv = func(pkt *probing.Packet) {
+		state.Graph.AddValue(float64(pkt.Rtt / time.Millisecond))
+	}
 
 	go func() {
-		running := true
+		state.running = true
 		for {
-			if !running {
+			if !state.running {
 				break
 			}
 			select {
 			case <-state.stopChan:
-				running = false
+				pinger.Stop()
+				state.running = false
 			default:
-				state.Graph.AddValue(float64(rand.Intn(100)))
+				//state.Graph.AddValue(float64(rand.Intn(100)))
 				img, err := state.Graph.GenerateImage()
 				if err != nil {
 					fmt.Println(err)
-					running = false
+					//running = false
 					continue
 				}
 				state.SetImage(img)
@@ -48,33 +55,18 @@ func StartGraphLoop(state *PingoState) error {
 			}
 		}
 	}()
+
+	err = pinger.Run()
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func CreateWindow(a fyne.App, state *PingoState) fyne.Window {
-	window := a.NewWindow("Pingo")
-
-	// Large row with just the output graph
-	//chartRow := container.New(layout.NewHBoxLayout())
-
-	raster := canvas.NewRasterWithPixels(func(x, y, w, h int) color.Color {
-		if state.canvasImage != nil {
-			return state.canvasImage.At(x, y)
-		} else {
-			return color.RGBA{0, 0, 0, 0}
-		}
-	})
-	state.canvasRaster = raster
-	raster.SetMinSize(fyne.NewSize(900, 190))
-	//img.FillMode = canvas.ImageFillOriginal
-
-	controls := BuildControlsLayout()
-
-	bottomContainer := container.NewGridWithColumns(2, controls, widget.NewEntry())
-
-	mainContainer := container.NewBorder(raster, bottomContainer, nil, nil)
-
-	window.SetContent(mainContainer)
-
-	return window
+func StopGraphLoop(state *PingoState) {
+	if state.running {
+		state.stopChan <- true
+	}
 }
