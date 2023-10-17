@@ -14,6 +14,14 @@ type PingoGraph struct {
 	Length int
 }
 
+type GraphError struct {
+	str string
+}
+
+func (err *GraphError) Error() string {
+	return err.str
+}
+
 // Sets the maximum length of a Pingo Graph. Valid lengths are all integers 0 < x < 1000
 func (graph *PingoGraph) SetLength(length int) bool {
 	if length < 0 && length > 1000 {
@@ -42,8 +50,40 @@ func (graph *PingoGraph) Clear() {
 	graph.XValues = make([]float64, 0)
 }
 
-// Creates an Image based on the current data of the graph
-func (graph *PingoGraph) GenerateImage() image.Image {
+/*
+Creates an Image based on the current data of the graph
+
+May return a GraphError if graph contains invalid parameters
+*/
+func (graph *PingoGraph) GenerateImage() (img image.Image, err error) {
+	if graph.Length <= 0 || graph.Length >= 1000 {
+		err = &GraphError{
+			str: fmt.Sprintf("graph: length of %v is invalid", graph.Length),
+		}
+		return nil, err
+	}
+
+	if len(graph.YValues) <= 0 {
+		err = &GraphError{
+			str: "graph: no Y values",
+		}
+		return nil, err
+	}
+
+	if len(graph.XValues) != len(graph.YValues) {
+		err = &GraphError{
+			str: "graph: mismatched length between X values and Y values",
+		}
+		return nil, err
+	}
+
+	if len(graph.YValues) > graph.Length {
+		err = &GraphError{
+			str: fmt.Sprintf("graph: more Y values than graph's length allows (%v/%v)", len(graph.YValues), graph.Length),
+		}
+		return nil, err
+	}
+
 	gochart := chart.Chart{
 		Series: []chart.Series{
 			chart.ContinuousSeries{
@@ -56,11 +96,12 @@ func (graph *PingoGraph) GenerateImage() image.Image {
 	collector := &chart.ImageWriter{}
 	gochart.Render(chart.PNG, collector)
 
-	img, err := collector.Image()
+	img, err = collector.Image()
+
 	if err != nil {
 		fmt.Println(err)
-		return nil
+		return nil, err
 	}
 
-	return img
+	return img, nil
 }
