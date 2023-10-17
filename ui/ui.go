@@ -35,7 +35,7 @@ func StartGraphLoop(state *PingoState) error {
 			case <-state.stopChan:
 				running = false
 			default:
-				state.graph.GenerateImage()
+				state.Graph.GenerateImage()
 				time.Sleep(time.Duration(state.interval) * time.Millisecond)
 			}
 		}

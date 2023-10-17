@@ -11,7 +11,7 @@ type PingoState struct {
 	running       bool
 	interval      int
 	pointsToGraph int
-	graph         *graph.PingoGraph
+	Graph         *graph.PingoGraph
 	canvasImage   image.Image
 	canvasRaster  *canvas.Raster
 	stopChan      chan bool
@@ -28,7 +28,7 @@ func NewState() *PingoState {
 		running:       false,
 		interval:      150,
 		pointsToGraph: 25,
-		graph:         pGraph,
+		Graph:         pGraph,
 		stopChan:      make(chan bool),
 	}
 

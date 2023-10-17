@@ -91,6 +91,8 @@ func (graph *PingoGraph) GenerateImage() (img image.Image, err error) {
 				YValues: graph.YValues,
 			},
 		},
+		Width:  900,
+		Height: 190,
 	}
 
 	collector := &chart.ImageWriter{}
