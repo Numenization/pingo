@@ -21,6 +21,12 @@ jobs:
       with:
         go-version: '1.21'
 
+    - name: Update packages
+      run: sudo apt-get update
+
+    - name: Install packages
+      run: sudo apt-get install --fix-missing libgl1-mesa-dev xorg-dev
+
     - name: Build
       run: go build -v ./...
 
