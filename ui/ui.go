@@ -44,7 +44,6 @@ func StartGraphLoop(state *PingoState) error {
 
 	go GraphLoop(state, pinger)
 	state.Log(fmt.Sprintf("Started pinging '%v' with an interval of %vms and graphing %v points", state.target, state.interval, state.pointsToGraph))
-	fmt.Println(state.logData)
 
 	err = pinger.Run()
 

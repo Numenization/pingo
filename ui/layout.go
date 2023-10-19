@@ -12,6 +12,62 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
+// Layout that will create an evenly sized horizontal grid and can be configured to allow a child object to span across 2 or more grid spaces
+type HorizSpanLayout struct {
+	spans            []int
+	biggestMinHeight float32
+}
+
+func NewHorizSpanLayout(s []int) *HorizSpanLayout {
+	return &HorizSpanLayout{
+		spans: s,
+	}
+}
+
+func (l *HorizSpanLayout) Layout(objects []fyne.CanvasObject, containerSize fyne.Size) {
+	gridTotal := 0
+	for _, num := range l.spans {
+		gridTotal += num
+	}
+
+	// dont divide by 0
+	if len(l.spans) <= 0 || gridTotal <= 0 {
+		return
+	}
+
+	gridSize := containerSize.Width / float32(gridTotal)
+	pos := fyne.NewPos(0, 0)
+
+	for i, o := range objects {
+		span := l.spans[i]
+		w, h := gridSize*float32(span), o.MinSize().Height
+
+		if h > l.biggestMinHeight {
+			l.biggestMinHeight = h
+		} else {
+			h = l.biggestMinHeight
+		}
+
+		size := fyne.NewSize(w, h)
+
+		o.Resize(size)
+		o.Move(pos)
+
+		pos = pos.Add(fyne.NewPos(size.Width, 0))
+	}
+}
+
+func (l *HorizSpanLayout) MinSize(objects []fyne.CanvasObject) fyne.Size {
+	w, h := float32(0), float32(0)
+	for _, o := range objects {
+		size := o.MinSize()
+
+		w += size.Width
+		h += size.Height
+	}
+	return fyne.NewSize(w, h)
+}
+
 func BuildRaster(state *PingoState) *canvas.Raster {
 	raster := canvas.NewRasterWithPixels(func(x, y, w, h int) color.Color {
 		if state.canvasImage != nil {
@@ -82,7 +138,9 @@ func CreateWindow(a fyne.App, state *PingoState) fyne.Window {
 	state.logGrid = logGrid
 	state.logScroll = logScroll
 
-	bottomContainer := container.NewGridWithColumns(2, controls, logScroll)
+	//bottomContainer := container.NewGridWithColumns(2, controls, logScroll)
+	bottomLayout := NewHorizSpanLayout([]int{1, 3})
+	bottomContainer := container.New(bottomLayout, controls, logScroll)
 	mainContainer := container.NewBorder(raster, bottomContainer, nil, nil)
 
 	window.SetContent(mainContainer)
