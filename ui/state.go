@@ -6,6 +6,7 @@ import (
 	"pingo/graph"
 
 	"fyne.io/fyne/v2/canvas"
+	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -19,6 +20,7 @@ type PingoState struct {
 	target        string
 	stopChan      chan bool
 	canvasImage   image.Image
+	logData       []string
 
 	// Elements that are part of the UI
 	canvasRaster  *canvas.Raster
@@ -28,7 +30,8 @@ type PingoState struct {
 	intervalEntry *NumericalEntry
 	pointsEntry   *NumericalEntry
 	targetEntry   *widget.Entry
-	logBox        *ReadOnlyEntry
+	logGrid       *widget.TextGrid
+	logScroll     *container.Scroll
 }
 
 func NewState() *PingoState {
@@ -53,6 +56,12 @@ func NewState() *PingoState {
 func (state *PingoState) SetImage(newImage image.Image) {
 	state.canvasImage = newImage
 	state.canvasRaster.Refresh()
+}
+
+func (state *PingoState) Log(str string) {
+	state.logData = append(state.logData, str)
+	state.logGrid.SetText(state.logGrid.Text() + str + "\n")
+	state.logScroll.ScrollToBottom()
 }
 
 func (state *PingoState) String() string {

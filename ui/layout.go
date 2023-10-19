@@ -74,14 +74,15 @@ func CreateWindow(a fyne.App, state *PingoState) fyne.Window {
 	raster := BuildRaster(state)
 	controls := BuildControlsLayout(state)
 
-	logEntry := NewReadOnlyEntry()
-	state.logBox = logEntry
+	logGrid := widget.NewTextGrid()
+	logScroll := container.NewScroll(logGrid)
 
-	for i := 0; i < 10; i++ {
-		logEntry.Text = fmt.Sprintf("%v%v%v\n", logEntry.Text, "New line: ", i)
-	}
+	logGrid.ShowLineNumbers = true
 
-	bottomContainer := container.NewGridWithColumns(2, controls, logEntry)
+	state.logGrid = logGrid
+	state.logScroll = logScroll
+
+	bottomContainer := container.NewGridWithColumns(2, controls, logScroll)
 	mainContainer := container.NewBorder(raster, bottomContainer, nil, nil)
 
 	window.SetContent(mainContainer)

@@ -56,6 +56,12 @@ func NewReadOnlyEntry() *ReadOnlyEntry {
 	return entry
 }
 
+func NewReadOnlyEntryWithData(data binding.String) *ReadOnlyEntry {
+	entry := NewReadOnlyEntry()
+	entry.Bind(data)
+	return entry
+}
+
 func (e *ReadOnlyEntry) TypedKey(key *fyne.KeyEvent) {
 	// do nothing
 }
