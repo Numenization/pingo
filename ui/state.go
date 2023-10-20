@@ -5,6 +5,7 @@ import (
 	"image"
 	"pingo/graph"
 
+	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
@@ -23,6 +24,7 @@ type PingoState struct {
 	logData       []string
 
 	// Elements that are part of the UI
+	window        fyne.Window
 	canvasRaster  *canvas.Raster
 	stopButton    *widget.Button
 	startButton   *widget.Button
@@ -51,6 +53,10 @@ func NewState() *PingoState {
 	}
 
 	return state
+}
+
+func (state *PingoState) SetWindow(win fyne.Window) {
+	state.window = win
 }
 
 func (state *PingoState) SetImage(newImage image.Image) {

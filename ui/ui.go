@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"fyne.io/fyne/v2/dialog"
 	probing "github.com/prometheus-community/pro-bing"
 )
 
@@ -11,26 +12,28 @@ import (
 func StartGraphLoop(state *PingoState) error {
 	if state.running {
 		return &StateError{
-			str: "ui: graphing loop already running",
+			str: "Graphing loop already running",
 		}
 	}
 
 	if state.interval < 50 {
 		return &StateError{
-			str: fmt.Sprintf("ui: invalid update interval %v", state.interval),
+			str: fmt.Sprintf("Invalid update interval %vms (must be greater than 50ms)", state.interval),
 		}
 	}
 
 	if state.pointsToGraph <= 2 || state.pointsToGraph > 1000 {
 		return &StateError{
-			str: fmt.Sprintf("ui: invalid max graph points %v", state.pointsToGraph),
+			str: fmt.Sprintf("Invalid max graph points %v (must be between 2 and 999)", state.pointsToGraph),
 		}
 	}
+
+	targetUrl := state.target
 
 	state.Graph.Clear()
 	state.Graph.Length = state.pointsToGraph
 
-	pinger, err := probing.NewPinger("www.google.com")
+	pinger, err := probing.NewPinger(targetUrl)
 
 	if err != nil {
 		return err
@@ -75,7 +78,9 @@ func GraphLoop(state *PingoState, pinger *probing.Pinger) {
 		default:
 			img, err := state.Graph.GenerateImage()
 			if err != nil {
-				// TODO: handle the error somehow
+				state.running = false
+				pinger.Stop()
+				dialog.ShowError(err, state.window)
 				continue
 			}
 			state.SetImage(img)

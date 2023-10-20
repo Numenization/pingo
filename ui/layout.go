@@ -8,6 +8,7 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 )
@@ -103,7 +104,14 @@ func BuildControlsLayout(state *PingoState) *fyne.Container {
 	intervalEntry := NewNumericalEntryWithData(boundInterval)
 	targetEntry := widget.NewEntryWithData(boundTarget)
 
-	startButton := widget.NewButton("Start", func() { go func() { StartGraphLoop(state) }() })
+	startButton := widget.NewButton("Start", func() {
+		go func() {
+			err := StartGraphLoop(state)
+			if err != nil {
+				dialog.ShowError(err, state.window)
+			}
+		}()
+	})
 	stopButton := widget.NewButton("Stop", func() { go func() { StopGraphLoop(state) }() })
 	saveButton := widget.NewButton("Save Logs", func() { fmt.Println(state) })
 
@@ -126,6 +134,7 @@ func BuildControlsLayout(state *PingoState) *fyne.Container {
 
 func CreateWindow(a fyne.App, state *PingoState) fyne.Window {
 	window := a.NewWindow("Pingo")
+	state.SetWindow(window)
 
 	raster := BuildRaster(state)
 	controls := BuildControlsLayout(state)
@@ -138,12 +147,10 @@ func CreateWindow(a fyne.App, state *PingoState) fyne.Window {
 	state.logGrid = logGrid
 	state.logScroll = logScroll
 
-	//bottomContainer := container.NewGridWithColumns(2, controls, logScroll)
 	bottomLayout := NewHorizSpanLayout([]int{1, 3})
 	bottomContainer := container.New(bottomLayout, controls, logScroll)
 	mainContainer := container.NewBorder(raster, bottomContainer, nil, nil)
 
 	window.SetContent(mainContainer)
-
 	return window
 }
