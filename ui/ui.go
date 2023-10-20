@@ -76,7 +76,7 @@ func GraphLoop(state *PingoState, pinger *probing.Pinger) {
 			pinger.Stop()
 			state.running = false
 		default:
-			img, err := state.Graph.GenerateImage()
+			img, err := state.Graph.GenerateImage(state.canvasRaster.Size())
 			if err != nil {
 				state.running = false
 				pinger.Stop()

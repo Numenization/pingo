@@ -69,7 +69,7 @@ func (l *HorizSpanLayout) MinSize(objects []fyne.CanvasObject) fyne.Size {
 	return fyne.NewSize(w, h)
 }
 
-func BuildRaster(state *PingoState) *canvas.Raster {
+func BuildRaster(state *PingoState) *fyne.Container {
 	raster := canvas.NewRasterWithPixels(func(x, y, w, h int) color.Color {
 		if state.canvasImage != nil {
 			return state.canvasImage.At(x, y)
@@ -78,9 +78,10 @@ func BuildRaster(state *PingoState) *canvas.Raster {
 		}
 	})
 	state.canvasRaster = raster
-	raster.SetMinSize(fyne.NewSize(900, 190))
+	raster.SetMinSize(fyne.NewSize(1000, 190))
 
-	return raster
+	rasterContainer := container.NewStack(raster)
+	return rasterContainer
 }
 
 func BuildControlsLayout(state *PingoState) *fyne.Container {
@@ -149,7 +150,7 @@ func CreateWindow(a fyne.App, state *PingoState) fyne.Window {
 
 	bottomLayout := NewHorizSpanLayout([]int{1, 3})
 	bottomContainer := container.New(bottomLayout, controls, logScroll)
-	mainContainer := container.NewBorder(raster, bottomContainer, nil, nil)
+	mainContainer := container.NewBorder(nil, bottomContainer, nil, nil, raster)
 
 	window.SetContent(mainContainer)
 	return window

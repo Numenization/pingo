@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image"
 
+	"fyne.io/fyne/v2"
 	"github.com/wcharczuk/go-chart/v2"
 )
 
@@ -55,7 +56,7 @@ Creates an Image based on the current data of the graph
 
 May return a GraphError if graph contains invalid parameters
 */
-func (graph *PingoGraph) GenerateImage() (img image.Image, err error) {
+func (graph *PingoGraph) GenerateImage(size fyne.Size) (img image.Image, err error) {
 	if graph.Length <= 0 || graph.Length >= 1000 {
 		err = &GraphError{
 			str: fmt.Sprintf("graph: length of %v is invalid", graph.Length),
@@ -67,7 +68,7 @@ func (graph *PingoGraph) GenerateImage() (img image.Image, err error) {
 		err = &GraphError{
 			str: "graph: no Y values",
 		}
-		return nil, err
+		return nil, nil
 	}
 
 	if len(graph.XValues) != len(graph.YValues) {
@@ -96,8 +97,8 @@ func (graph *PingoGraph) GenerateImage() (img image.Image, err error) {
 				YValues: graph.YValues,
 			},
 		},
-		Width:  900,
-		Height: 190,
+		Width:  int(size.Width),
+		Height: int(size.Height),
 	}
 
 	collector := &chart.ImageWriter{}
